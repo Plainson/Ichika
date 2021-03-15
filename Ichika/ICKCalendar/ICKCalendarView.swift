@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Masonry
+import UIKit
 
 public class ICKCalendarView: UIView {
     
@@ -18,9 +18,24 @@ public class ICKCalendarView: UIView {
     public var delegate: ICKCalendarViewDelegate?
     
     public var fillWithLastAndNextMonthDay: Bool = true  // 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
+    public var dateCellTinColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.label
+        } else {
+            return UIColor.black
+        }
+    }
+    public var otherDateCellColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.lightGray
+        } else {
+            return UIColor.gray
+        }
+    }
     
-    private var _defaultItemSize: CGSize = CGSize.init()
+    private var _itemSize: CGSize = CGSize.init()
     private var _calendarViewHeight: CGFloat = 0
+    private var monthCount: Int = 10
     
     // MARK: - Init.
     
@@ -29,45 +44,49 @@ public class ICKCalendarView: UIView {
         self.initialize()
     }
     
+    public init() {
+        fatalError("you must initialize calendar view with init(frame:) initializer.")
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         self.initialize()
     }
     
-    public init() {
-        super.init(frame: CGRect.init())
-        self.initialize()
-    }
-    
     private func initialize() {
         self.dateDisplayLabel = UILabel.init()
-        self.dateDisplayLabel.text = "2019年2月"
+        let dateDisplayLabelHeight: CGFloat = 40
+        self.dateDisplayLabel.frame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: dateDisplayLabelHeight)
+        self.dateDisplayLabel.text = "---"
         self.dateDisplayLabel.textAlignment = .center
         self.addSubview(self.dateDisplayLabel)
-        self.dateDisplayLabel.mas_makeConstraints { (view) in
-            view!.centerX.equalTo()(self.mas_centerX)
-            view!.width.equalTo()(120)
-            view!.height.equalTo()(40)
-            view!.top.equalTo()(self.mas_safeAreaLayoutGuideTop)?.offset()(10)
-        }
         
+        self._calendarViewHeight = self.frame.height - dateDisplayLabelHeight
         let mainCollectionViewFlowLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
-        mainCollectionViewFlowLayout.sectionInset = UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
-        mainCollectionViewFlowLayout.itemSize = self.frame.size
+        mainCollectionViewFlowLayout.itemSize = CGSize.init(width: self.frame.width, height: self._calendarViewHeight)
         mainCollectionViewFlowLayout.scrollDirection = .horizontal
+        mainCollectionViewFlowLayout.minimumLineSpacing = 0
+        mainCollectionViewFlowLayout.minimumInteritemSpacing = 0
         self.mainCollectionView = UICollectionView.init(frame: CGRect.init(), collectionViewLayout: mainCollectionViewFlowLayout)
+        self.mainCollectionView.frame = CGRect.init(x: 0, y: dateDisplayLabelHeight, width: self.frame.width, height: self._calendarViewHeight)
         self.mainCollectionView.backgroundColor = self.backgroundColor
         self.mainCollectionView.isScrollEnabled = true
         self.mainCollectionView.allowsMultipleSelection = false
         self.mainCollectionView.register(ICKCalendarDateCell.self, forCellWithReuseIdentifier: "DateCell")
         self.mainCollectionView.delegate = self
         self.mainCollectionView.dataSource = self
+        self.mainCollectionView.isPagingEnabled = true
         self.addSubview(self.mainCollectionView)
-        self.mainCollectionView.mas_makeConstraints { (view) in
-            view!.left.right()?.offset()
-            view!.top.equalTo()(self.dateDisplayLabel.mas_bottom)?.offset()(10)
-            view!.width.equalTo()(self.frame.width)
-            view!.height.equalTo()(self._calendarViewHeight)
+        self.mainCollectionView.scrollToItem(at: IndexPath.init(row: self.monthCount - 1, section: 0), at: .centeredHorizontally, animated: false)
+    }
+    
+    private func calculationDate(addOrSub: String, value: Int) -> Date {
+        let date: Date = Date.init()
+        let calendar: Calendar = Calendar.current
+        if addOrSub == "add" {
+            return calendar.date(byAdding: .month, value: value, to: date)!
+        } else {
+            return calendar.date(byAdding: .month, value: -value, to: date)!
         }
     }
 }
@@ -83,12 +102,13 @@ extension ICKCalendarView: UICollectionViewDelegate {
 extension ICKCalendarView: UICollectionViewDataSource {
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return self.monthCount
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: ICKCalendarDateCell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! ICKCalendarDateCell
-        cell.refreshDateView(date: Date.init())
+        cell.date = self.calculationDate(addOrSub: "sub", value: self.monthCount - 1 - indexPath.row)
+        cell.refreshDateView()
         return cell
     }
 }

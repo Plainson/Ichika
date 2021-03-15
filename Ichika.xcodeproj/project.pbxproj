@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,8 @@
 		2203156F25F5B6BD0064B8D8 /* ICKCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2203156E25F5B6BD0064B8D8 /* ICKCalendarView.swift */; };
 		2203157325F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2203157225F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift */; };
 		2203157625F5B6F20064B8D8 /* ICKCalendarDateCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2203157525F5B6F20064B8D8 /* ICKCalendarDateCell.swift */; };
+		22BD13E425FF459900FCD74B /* ICKCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BD13E325FF459900FCD74B /* ICKCalendar.swift */; };
+		22BD13E725FF4B5600FCD74B /* ICKDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BD13E625FF4B5600FCD74B /* ICKDate.swift */; };
 		4210AB8E0BAA2D495F3D5A12 /* Pods_Ichika.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E8CA9BAEE773F01485F248 /* Pods_Ichika.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +35,8 @@
 		2203156E25F5B6BD0064B8D8 /* ICKCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICKCalendarView.swift; sourceTree = "<group>"; };
 		2203157225F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICKCalendarViewDelegate.swift; sourceTree = "<group>"; };
 		2203157525F5B6F20064B8D8 /* ICKCalendarDateCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICKCalendarDateCell.swift; sourceTree = "<group>"; };
+		22BD13E325FF459900FCD74B /* ICKCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICKCalendar.swift; sourceTree = "<group>"; };
+		22BD13E625FF4B5600FCD74B /* ICKDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICKDate.swift; sourceTree = "<group>"; };
 		22E8CA9BAEE773F01485F248 /* Pods_Ichika.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Ichika.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		43B26A0B115C9C8B387DBA82 /* Pods-Ichika.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ichika.debug.xcconfig"; path = "Target Support Files/Pods-Ichika/Pods-Ichika.debug.xcconfig"; sourceTree = "<group>"; };
 		71D73BE32D8DD37564CB6EE6 /* Pods-Ichika.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ichika.release.xcconfig"; path = "Target Support Files/Pods-Ichika/Pods-Ichika.release.xcconfig"; sourceTree = "<group>"; };
@@ -98,6 +102,8 @@
 				2203156E25F5B6BD0064B8D8 /* ICKCalendarView.swift */,
 				2203157225F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift */,
 				2203157525F5B6F20064B8D8 /* ICKCalendarDateCell.swift */,
+				22BD13E325FF459900FCD74B /* ICKCalendar.swift */,
+				22BD13E625FF4B5600FCD74B /* ICKDate.swift */,
 			);
 			path = ICKCalendar;
 			sourceTree = "<group>";
@@ -116,7 +122,6 @@
 				43B26A0B115C9C8B387DBA82 /* Pods-Ichika.debug.xcconfig */,
 				71D73BE32D8DD37564CB6EE6 /* Pods-Ichika.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -237,8 +242,10 @@
 				2203154D25F5B4680064B8D8 /* ViewController.swift in Sources */,
 				2203157325F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift in Sources */,
 				2203154925F5B4680064B8D8 /* AppDelegate.swift in Sources */,
+				22BD13E725FF4B5600FCD74B /* ICKDate.swift in Sources */,
 				2203157625F5B6F20064B8D8 /* ICKCalendarDateCell.swift in Sources */,
 				2203156725F5B5D80064B8D8 /* ICKCalendarViewController.swift in Sources */,
+				22BD13E425FF459900FCD74B /* ICKCalendar.swift in Sources */,
 				2203156F25F5B6BD0064B8D8 /* ICKCalendarView.swift in Sources */,
 				2203154B25F5B4680064B8D8 /* SceneDelegate.swift in Sources */,
 			);
