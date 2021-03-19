@@ -9,24 +9,59 @@ import Foundation
 import UIKit
 
 class ICKCalendarDateCell: UICollectionViewCell {
-    var date: Date!
+    var date: ICKDate!
+    var calendarView: ICKCalendarView!
     var fillWithLastAndNextMonthDay: Bool = true  // 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
+    
+    private var _dateCellTinColor: UIColor?
     var dateCellTinColor: UIColor {
-        if #available(iOS 13.0, *) {
-            return UIColor.label
-        } else {
-            return UIColor.black
+        get {
+            if #available(iOS 13.0, *), self._dateCellTinColor == nil {
+                self._dateCellTinColor = UIColor.lightGray
+            } else if self._dateCellTinColor == nil {
+                self._dateCellTinColor = UIColor.gray
+            }
+            return self._dateCellTinColor!
         }
-    }
-    var otherDateCellColor: UIColor {
-        if #available(iOS 13.0, *) {
-            return UIColor.lightGray
-        } else {
-            return UIColor.gray
+        set {
+            self._dateCellTinColor = newValue
         }
     }
     
-    private var currentDateArray: Array<String> = Array<String>.init(repeating: "", count: 49)
+    private var _otherDateCellColor: UIColor?
+    var otherDateCellColor: UIColor {
+        get {
+            if #available(iOS 13.0, *), self._otherDateCellColor == nil {
+                self._otherDateCellColor = UIColor.lightGray
+            } else if self._otherDateCellColor == nil {
+                self._otherDateCellColor = UIColor.gray
+            }
+            return self._otherDateCellColor!
+        }
+        set {
+            self._otherDateCellColor = newValue
+        }
+    }
+    
+    private var _weekDateCellColor: UIColor?
+    var weekDateCellColor: UIColor {
+        get {
+            if #available(iOS 13.0, *), self._weekDateCellColor == nil {
+                self._weekDateCellColor = UIColor.lightGray
+            } else if self._weekDateCellColor == nil {
+                self._weekDateCellColor = UIColor.gray
+            }
+            return self._weekDateCellColor!
+        }
+        set {
+            self._weekDateCellColor = newValue
+        }
+    }
+    
+    var handleTapDate: ((_ view: ICKCalendarView, _ date: ICKDate) -> Void)?
+    var viewForCellHandle: ((_ view: ICKCalendarView, _ date: ICKDate) -> UIView?)?
+    
+    private var currentDateArray: Array<ICKDate?> = Array<ICKDate?>.init(repeating: ICKDate.init(), count: 49)
     
     private var dateView: UIView!
     
@@ -67,36 +102,34 @@ class ICKCalendarDateCell: UICollectionViewCell {
     // MARK: - 更新某月的日期数据，让该月的每一天各归其位。
     
     private func update() {
-        let calendar: Calendar = Calendar.current
-        let firstDateOfMonth: Date = self.getFirstDateOfMonth(date: self.date).date
-        let lastDateOfMonthString: String = self.getLastDateOfMonth(date: self.date).str
-        var firstDayOfMonthDateComponents: DateComponents = DateComponents.init()
-        firstDayOfMonthDateComponents = calendar.dateComponents([.weekday], from: firstDateOfMonth as Date)
+        let calendar: ICKCalendar = ICKCalendar.current
+        let firstDateOfMonth: ICKDate = calendar.getFirstDateOfMonth(date: self.date)
         
         // - 如果需要填充上个月和下个月的日期，需要提前计算好上个月的最后一天以避免在下面的循环中重复计算。
         
-        var lastDayOfLastMonth: String = ""  // 上个月的最后一天。
+        var lastDateOfLastMonth: ICKDate = ICKDate.init()  // 上个月的最后一天。
         if self.fillWithLastAndNextMonthDay {
-            let day: Date = calendar.date(byAdding: .day, value: -1, to: firstDateOfMonth)!
-            let dateFormatter: DateFormatter = DateFormatter.init()
-            dateFormatter.dateFormat = "yyyy-MM-dd"
-            lastDayOfLastMonth = String(dateFormatter.string(from: day).suffix(2))
+            let day: ICKDate = calendar.date(byAdding: .day, value: -1, to: firstDateOfMonth)
+            lastDateOfLastMonth = day
         }
         
         var dayNum: Int = 1
-        var nextDayNum: Int = 1
-        let lastDayOfLastMonthNum: Int = Int(lastDayOfLastMonth)!
-        var retainDays: Int = self.transformWeekday(day: firstDayOfMonthDateComponents.weekday!)  // 准备填入的上个月的总天数。
+        var retainDays: Int = self.transformWeekday(day: firstDateOfMonth.week)  // 准备填入的上个月的总天数。
         for index in 7..<49 {  // 数组固定 49 个元素，前 7 个元素被星期日～星期六的字符串占据。
-            if dayNum > Int(lastDateOfMonthString.suffix(2))! {
-                self.currentDateArray[index] = self.fillWithLastAndNextMonthDay == false ? "" : String(nextDayNum)
-                nextDayNum += 1
-            } else if index - 7 < 6 && index - 7 < self.transformWeekday(day: firstDayOfMonthDateComponents.weekday!) {
-                let day: Int = lastDayOfLastMonthNum - retainDays + 1
+            if dayNum > lastDateOfLastMonth.day {
+                let date: ICKDate = ICKCalendar.current.date(byAdding: .day, value: dayNum - 1, to: firstDateOfMonth)
+                date.mark = String(date.day)
+                self.currentDateArray[index] = date
+                dayNum += 1
+            } else if index - 7 < 6 && index - 7 < self.transformWeekday(day: firstDateOfMonth.week) {
+                let date: ICKDate = ICKCalendar.current.date(byAdding: .day, value: -retainDays, to: firstDateOfMonth)
+                date.mark = String(date.day)
+                self.currentDateArray[index] = date
                 retainDays -= 1
-                self.currentDateArray[index] = self.fillWithLastAndNextMonthDay == false ? "" : String(day)
             } else {
-                self.currentDateArray[index] = String(dayNum)
+                let date: ICKDate = ICKCalendar.current.date(byAdding: .day, value: dayNum - 1, to: firstDateOfMonth)
+                date.mark = String(date.day)
+                self.currentDateArray[index] = date
                 dayNum += 1
             }
         }
@@ -124,28 +157,47 @@ class ICKCalendarDateCell: UICollectionViewCell {
             let dateButton: ICKCalendarDateButton = ICKCalendarDateButton.init()
             switch i {
             case 0:
-                dateButton.date = "日"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("日", for: .normal)
             case 1:
-                dateButton.date = "一"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("一", for: .normal)
             case 2:
-                dateButton.date = "二"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("二", for: .normal)
             case 3:
-                dateButton.date = "三"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("三", for: .normal)
             case 4:
-                dateButton.date = "四"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("四", for: .normal)
             case 5:
-                dateButton.date = "五"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("五", for: .normal)
             case 6:
-                dateButton.date = "六"
+                self.currentDateArray[i] = nil
+                dateButton.setTitle("六", for: .normal)
             default:
                 dateButton.date = self.currentDateArray[i]
             }
             let itemSizeWidth: CGFloat = self.dateView.frame.width / 7
             let itemSizeHeight: CGFloat = itemSizeWidth
             dateButton.frame = CGRect.init(x: CGFloat(i % 7) * itemSizeWidth, y: CGFloat(i / 7) * itemSizeHeight, width: itemSizeWidth, height: itemSizeHeight)
-            dateButton.setTitle(dateButton.date, for: .normal)
+            if dateButton.date != nil {
+                dateButton.setTitle(dateButton.date!.mark, for: .normal)
+                if dateButton.date!.month != self.date!.month {
+                    dateButton.setTitleColor(self.otherDateCellColor, for: .normal)
+                } else {
+                    dateButton.setTitleColor(self.dateCellTinColor, for: .normal)
+                }
+                dateButton.addTarget(self, action: #selector(self.handleTapDateButton(sender:)), for: .touchUpInside)
+                if let handle = self.viewForCellHandle {
+                    dateButton.customView(view: handle(self.calendarView, dateButton.date!))
+                }
+            } else {
+                dateButton.setTitleColor(self.weekDateCellColor, for: .normal)
+            }
             
-            dateButton.setTitleColor(self.dateCellTinColor, for: .normal)
             self.dateView.addSubview(dateButton)
         }
     }
@@ -155,10 +207,24 @@ class ICKCalendarDateCell: UICollectionViewCell {
 
 extension ICKCalendarDateCell {
     
+    @objc func handleTapDateButton(sender: ICKCalendarDateButton) {
+        self.handleTapDate?(self.calendarView, sender.date!)
+    }
 }
 
 // MARK: - ICKCalendarDateButton.
 
 class ICKCalendarDateButton: UIButton {
-    var date: String!
+    var date: ICKDate?
+    
+    func customView(view: UIView?) {
+        if view == nil {
+            return
+        }
+        let backgroundView: UIView = UIView.init()
+        backgroundView.frame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+        self.addSubview(backgroundView)
+        view!.frame = CGRect.init(x: 0, y: 0, width: backgroundView.frame.width, height: backgroundView.frame.height)
+        backgroundView.addSubview(view!)
+    }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ICKCalendar {
+public struct ICKCalendar {
     
     static var current: ICKCalendar = ICKCalendar.init()
     
@@ -21,8 +21,27 @@ struct ICKCalendar {
         self.calendar = calendar
     }
     
-    public func week() -> Int {
-        
+    public func day(date: ICKDate) -> Int {
+        var dateComponents: DateComponents = DateComponents.init()
+        dateComponents = self.calendar.dateComponents([.day], from: date.toDate())
+        return dateComponents.day!
+    }
+    
+    public func month(date: ICKDate) -> Int {
+        var dateComponents: DateComponents = DateComponents.init()
+        dateComponents = self.calendar.dateComponents([.month], from: date.toDate())
+        return dateComponents.month!
+    }
+    
+    public func week(date: ICKDate) -> Int {
+        var dateComponents: DateComponents = DateComponents.init()
+        dateComponents = self.calendar.dateComponents([.weekday], from: date.toDate())
+        return dateComponents.weekday!
+    }
+    
+    public func date(byAdding: Calendar.Component, value: Int, to: ICKDate) -> ICKDate {
+        let date: Date = self.calendar.date(byAdding: byAdding, value: value, to: to.toDate())!
+        return ICKDate.init(date: date)
     }
 }
 

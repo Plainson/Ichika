@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct ICKDate {
-    
+public class ICKDate: NSObject {
+
     static var today: ICKDate = ICKDate.init()
     
     public var dateFormatterString: String = "yyyy-MM-dd"
@@ -17,28 +17,39 @@ struct ICKDate {
     private var dateFormatter: DateFormatter = DateFormatter.init()
     private var calendar: ICKCalendar = ICKCalendar.current
     
-    init() {
+    public var day: Int {
+        return self.calendar.day(date: self)
+    }
+    
+    public var month: Int {
+        return self.calendar.month(date: self)
+    }
+    
+    public var week: Int {
+        return self.calendar.week(date: self)
+    }
+    
+    public var mark: String?
+    
+    override init() {
+        super.init()
         self.date = Date.init()
         self.dateFormatter.dateFormat = self.dateFormatterString
     }
     
-    init(date: Date) {
+    convenience init(date: Date) {
         self.init()
         self.date = date
     }
     
-    init(date: Date, dateFormatterString: String) {
+    convenience init(date: Date, dateFormatterString: String) {
         self.init(date: date)
         self.dateFormatterString = dateFormatterString
     }
     
-    init(date: Date, dateFormatterString: String, calendar: ICKCalendar) {
+    convenience init(date: Date, dateFormatterString: String, calendar: ICKCalendar) {
         self.init(date: date, dateFormatterString: dateFormatterString)
         self.calendar = calendar
-    }
-    
-    public func week() -> Int {
-        
     }
 }
 
