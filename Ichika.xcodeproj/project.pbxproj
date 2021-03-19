@@ -99,11 +99,11 @@
 		2203156D25F5B6870064B8D8 /* ICKCalendar */ = {
 			isa = PBXGroup;
 			children = (
+				22BD13E625FF4B5600FCD74B /* ICKDate.swift */,
+				22BD13E325FF459900FCD74B /* ICKCalendar.swift */,
 				2203156E25F5B6BD0064B8D8 /* ICKCalendarView.swift */,
 				2203157225F5B6D80064B8D8 /* ICKCalendarViewDelegate.swift */,
 				2203157525F5B6F20064B8D8 /* ICKCalendarDateCell.swift */,
-				22BD13E325FF459900FCD74B /* ICKCalendar.swift */,
-				22BD13E625FF4B5600FCD74B /* ICKDate.swift */,
 			);
 			path = ICKCalendar;
 			sourceTree = "<group>";
@@ -398,7 +398,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = B7AM928UT8;
 				INFOPLIST_FILE = Ichika/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -419,7 +419,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = B7AM928UT8;
 				INFOPLIST_FILE = Ichika/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
