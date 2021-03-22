@@ -15,7 +15,7 @@ public class ICKCalendarView: UIView {
     private var dateDisplayLabel: UILabel!
     private var mainCollectionView: UICollectionView!
     
-    public var delegate: ICKCalendarViewDelegate?
+    public weak var delegate: ICKCalendarViewDelegate?
     
     public var fillWithLastAndNextMonthDay: Bool = true  // 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
     
@@ -149,8 +149,8 @@ extension ICKCalendarView: UICollectionViewDataSource {
         // - delegate.
         
         if let delegate = self.delegate {
-            cell.handleTapDate = { (view, date) in
-                delegate.calendarView?(calendarView: view, didSelectCellAt: date)
+            cell.handleTapDate = { (view, button) in
+                delegate.calendarView?(calendarView: view, didSelectCell: button)
             }
             
             cell.viewForCellHandle = { (view, date) in

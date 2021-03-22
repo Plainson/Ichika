@@ -12,7 +12,7 @@ import UIKit
     
     @objc optional func calendarView(itemSizeForCalendarView: ICKCalendarView) -> CGSize
     
-    @objc optional func calendarView(calendarView: ICKCalendarView, didSelectCellAt date: ICKDate)
+    @objc optional func calendarView(calendarView: ICKCalendarView, didSelectCell cell: ICKCalendarDateButton)
     
     @objc optional func calendarView(calendarView: ICKCalendarView, viewForCellAt date: ICKDate) -> UIView
 }

@@ -58,7 +58,7 @@ class ICKCalendarDateCell: UICollectionViewCell {
         }
     }
     
-    var handleTapDate: ((_ view: ICKCalendarView, _ date: ICKDate) -> Void)?
+    var handleTapDate: ((_ view: ICKCalendarView, _ cell: ICKCalendarDateButton) -> Void)?
     var viewForCellHandle: ((_ view: ICKCalendarView, _ date: ICKDate) -> UIView?)?
     
     private var currentDateArray: Array<ICKDate?> = Array<ICKDate?>.init(repeating: ICKDate.init(), count: 49)
@@ -73,30 +73,6 @@ class ICKCalendarDateCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    // MARK: - 获取当月的第一天和最后一天。
-    
-    private func getFirstDateOfMonth(date: Date) -> (date: Date, str: String) {
-        let calendar: Calendar = Calendar.current
-        let dateComponents: DateComponents = calendar.dateComponents([.year, .month], from: date)
-        let firstDateOfMonth: Date = calendar.date(from: dateComponents)!
-        let dateFormatter: DateFormatter = DateFormatter.init()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let firstDateOfMonthString: String = dateFormatter.string(from: firstDateOfMonth)
-        return (firstDateOfMonth, firstDateOfMonthString)
-    }
-    
-    private func getLastDateOfMonth(date: Date) -> (date: Date, str: String) {
-        let calendar: Calendar = Calendar.current
-        var dateComponents: DateComponents = DateComponents.init()
-        dateComponents.month = 1
-        dateComponents.second = -1
-        let lastFateOfMonth: Date = calendar.date(byAdding: dateComponents, to: getFirstDateOfMonth(date: date).date)!
-        let dateFormatter: DateFormatter = DateFormatter.init()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let lastDateOfMonthString: String = dateFormatter.string(from: lastFateOfMonth)
-        return (lastFateOfMonth, lastDateOfMonthString)
     }
     
     // MARK: - 更新某月的日期数据，让该月的每一天各归其位。
@@ -155,6 +131,7 @@ class ICKCalendarDateCell: UICollectionViewCell {
         self.contentView.addSubview(self.dateView)
         for i in 0...48 {
             let dateButton: ICKCalendarDateButton = ICKCalendarDateButton.init()
+            dateButton.isSelected = false
             switch i {
             case 0:
                 self.currentDateArray[i] = nil
@@ -208,16 +185,18 @@ class ICKCalendarDateCell: UICollectionViewCell {
 extension ICKCalendarDateCell {
     
     @objc func handleTapDateButton(sender: ICKCalendarDateButton) {
-        self.handleTapDate?(self.calendarView, sender.date!)
+        sender.isSelected = !sender.isSelected
+        self.handleTapDate?(self.calendarView, sender)
     }
 }
 
 // MARK: - ICKCalendarDateButton.
 
-class ICKCalendarDateButton: UIButton {
-    var date: ICKDate?
+public class ICKCalendarDateButton: UIButton {
     
-    func customView(view: UIView?) {
+    public var date: ICKDate?
+    
+    fileprivate func customView(view: UIView?) {
         if view == nil {
             return
         }
