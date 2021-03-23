@@ -14,9 +14,11 @@ class ICKCalendarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let calendarView: ICKCalendarView = ICKCalendarView.init(frame: CGRect.init(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height))
+        let calendarView: ICKCalendarView = ICKCalendarView.init(frame: CGRect.init(x: 0, y: 64, width: self.view.frame.width, height: self.view.frame.height))
         calendarView.delegate = self
+        calendarView.allowControlView = false
         calendarView.weekDateCellColor = UIColor.green
+        calendarView.allowManualScroll = false
         self.view.addSubview(calendarView)
     }
 }

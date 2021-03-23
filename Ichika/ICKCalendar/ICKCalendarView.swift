@@ -12,20 +12,49 @@ public class ICKCalendarView: UIView {
     
     // MARK: - Property.
     
-    private var dateDisplayLabel: UILabel!
+    private var controlView: UIView?
+    private var dateDisplayLabel: UILabel?
+    private var leftArrow: UIButton?
+    private var rightArrow: UIButton?
     private var mainCollectionView: UICollectionView!
     
     public weak var delegate: ICKCalendarViewDelegate?
     
-    public var fillWithLastAndNextMonthDay: Bool = true  // 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
+    /// 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
+    public var fillWithLastAndNextMonthDay: Bool = true
+    
+    private var _allowManualScroll: Bool = true
+    /// 是否允许手动滑动日历，如果为 `false`，则日历不允许左右滑动，只能通过 `controlView` 来控制日历月份切换。
+    public var allowManualScroll: Bool {
+        get {
+            return self._allowManualScroll
+        }
+        set {
+            self._allowManualScroll = newValue
+            self.mainCollectionView.isScrollEnabled = newValue
+        }
+    }
+    
+    private var _allowControlView: Bool = true
+    /// 是否打开日历切换控制视图，默认打开。
+    public var allowControlView: Bool {
+        get {
+            return self._allowControlView
+        }
+        set {
+            self._allowControlView = newValue
+            self.layoutIfNeeded()
+        }
+    }
     
     private var _dateCellTinColor: UIColor?
+    /// 日历当中日期的 cell 字体颜色。
     public var dateCellTinColor: UIColor {
         get {
             if #available(iOS 13.0, *), self._dateCellTinColor == nil {
-                self._dateCellTinColor = UIColor.lightGray
+                self._dateCellTinColor = UIColor.label
             } else if self._dateCellTinColor == nil {
-                self._dateCellTinColor = UIColor.gray
+                self._dateCellTinColor = UIColor.black
             }
             return self._dateCellTinColor!
         }
@@ -35,6 +64,7 @@ public class ICKCalendarView: UIView {
     }
     
     private var _otherDateCellColor: UIColor?
+    /// 若 `fillWithLastAndNextMonthDay` 为 `true`，那么改值表示不属于当月的日期的 cell 的字体颜色。
     public var otherDateCellColor: UIColor {
         get {
             if #available(iOS 13.0, *), self._otherDateCellColor == nil {
@@ -50,6 +80,7 @@ public class ICKCalendarView: UIView {
     }
     
     private var _weekDateCellColor: UIColor?
+    /// 表示日历当中星期X的字体颜色。
     public var weekDateCellColor: UIColor {
         get {
             if #available(iOS 13.0, *), self._weekDateCellColor == nil {
@@ -64,12 +95,59 @@ public class ICKCalendarView: UIView {
         }
     }
     
-    private var _itemSize: CGSize = CGSize.init()
-    private var _calendarViewHeight: CGFloat = 0
-    private var _lastContentOffSet: CGPoint?
+    private var _controlTitleColor: UIColor?
+    public var controlTitleColor: UIColor {
+        get {
+            if #available(iOS 13.0, *), self._controlTitleColor == nil {
+                self._controlTitleColor = UIColor.label
+            } else if self._controlTitleColor == nil {
+                self._controlTitleColor = UIColor.gray
+            }
+            return self._controlTitleColor!
+        }
+        set {
+            self._controlTitleColor = newValue
+            self.dateDisplayLabel?.textColor = newValue
+        }
+    }
     
-    private var monthCount: Int = 10
-    private var dateArray: Array<Int> = Array<Int>.init()
+    private var _controlArrowColor: UIColor?
+    public var controlArrowColor: UIColor {
+        get {
+            if #available(iOS 13.0, *), self._controlArrowColor == nil {
+                self._controlArrowColor = UIColor.label
+            } else if self._controlArrowColor == nil {
+                self._controlArrowColor = UIColor.gray
+            }
+            return self._controlArrowColor!
+        }
+        set {
+            self._controlArrowColor = newValue
+            self.leftArrow?.setTitleColor(newValue, for: .normal)
+            self.rightArrow?.setTitleColor(newValue, for: .normal)
+        }
+    }
+        
+    private var _monthCount: Int?
+    private var monthCount: Int {
+        get {
+            if self.allowManualScroll == false {
+                self._monthCount = 1
+            } else {
+                if self._monthCount == nil {
+                    self._monthCount = 10
+                }
+            }
+            return self._monthCount!
+        }
+        set {
+            self._monthCount = newValue
+        }
+    }
+    
+    public var currentDate: ICKDate = ICKDate.init()
+    
+    private var dateArray: Array<Int> = [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0]
     
     // MARK: - Init.
     
@@ -88,23 +166,58 @@ public class ICKCalendarView: UIView {
     }
     
     private func initialize() {
-        self.dateDisplayLabel = UILabel.init()
-        let dateDisplayLabelHeight: CGFloat = 40
-        self.dateDisplayLabel.frame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: dateDisplayLabelHeight)
-        self.dateDisplayLabel.text = "---"
-        self.dateDisplayLabel.textAlignment = .center
-        self.addSubview(self.dateDisplayLabel)
+        self.controlView?.removeFromSuperview()
+        self.mainCollectionView?.removeFromSuperview()
         
-        self._calendarViewHeight = self.frame.height - dateDisplayLabelHeight
+        var mainCollectionViewFrame: CGRect = CGRect.init()
+        if self.allowControlView {
+            let controlViewWidth: CGFloat = 220
+            let controlViewHeight: CGFloat = 64
+            let calendarLabelSize: CGSize = CGSize.init(width: 120, height: 50)
+            let arrowSize: CGSize = CGSize.init(width: 50, height: 50)
+            let y: CGFloat = (controlViewHeight - arrowSize.height) / 2
+            
+            self.controlView = UIView.init()
+            self.controlView!.frame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: controlViewHeight)
+            self.addSubview(self.controlView!)
+            
+            self.leftArrow = UIButton.init()
+            self.leftArrow!.frame = CGRect.init(x: (self.frame.width - controlViewWidth) / 2, y: y, width: arrowSize.width, height: arrowSize.height)
+            self.leftArrow!.setTitle("<", for: .normal)
+            self.leftArrow!.setTitleColor(self.controlArrowColor, for: .normal)
+            self.leftArrow!.addTarget(self, action: #selector(self.leftArrowHandle(sender:)), for: .touchUpInside)
+            self.controlView!.addSubview(self.leftArrow!)
+            
+            self.dateDisplayLabel = UILabel.init()
+            let dateDisplayLabelX: CGFloat = self.leftArrow!.frame.origin.x + arrowSize.width
+            self.dateDisplayLabel!.frame = CGRect.init(x: dateDisplayLabelX, y: y, width: calendarLabelSize.width, height: calendarLabelSize.height)
+            self.dateDisplayLabel!.text = String(ICKDate.init().toString().prefix(7))
+            self.dateDisplayLabel!.textColor = self.controlTitleColor
+            self.dateDisplayLabel!.textAlignment = .center
+            self.controlView!.addSubview(self.dateDisplayLabel!)
+            
+            self.rightArrow = UIButton.init()
+            let rightArrowX: CGFloat = self.dateDisplayLabel!.frame.origin.x + self.dateDisplayLabel!.frame.width
+            self.rightArrow!.frame = CGRect.init(x: rightArrowX, y: y, width: arrowSize.width, height: arrowSize.height)
+            self.rightArrow!.setTitle(">", for: .normal)
+            self.rightArrow!.setTitleColor(self.controlArrowColor, for: .normal)
+            self.rightArrow!.addTarget(self, action: #selector(self.rightArrowHandle(sender:)), for: .touchUpInside)
+            self.controlView!.addSubview(self.rightArrow!)
+            
+            mainCollectionViewFrame = CGRect.init(x: 0, y: controlViewHeight, width: self.frame.width, height: self.frame.height - controlViewHeight)
+        } else {
+            mainCollectionViewFrame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+        }
+        
         let mainCollectionViewFlowLayout: UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
-        mainCollectionViewFlowLayout.itemSize = CGSize.init(width: self.frame.width, height: self._calendarViewHeight)
+        mainCollectionViewFlowLayout.itemSize = CGSize.init(width: self.frame.width, height: mainCollectionViewFrame.height)
         mainCollectionViewFlowLayout.scrollDirection = .horizontal
         mainCollectionViewFlowLayout.minimumLineSpacing = 0
         mainCollectionViewFlowLayout.minimumInteritemSpacing = 0
         self.mainCollectionView = UICollectionView.init(frame: CGRect.init(), collectionViewLayout: mainCollectionViewFlowLayout)
-        self.mainCollectionView.frame = CGRect.init(x: 0, y: dateDisplayLabelHeight, width: self.frame.width, height: self._calendarViewHeight)
+        self.mainCollectionView.frame = mainCollectionViewFrame
         self.mainCollectionView.backgroundColor = self.backgroundColor
-        self.mainCollectionView.isScrollEnabled = true
+        self.mainCollectionView.isScrollEnabled = false
         self.mainCollectionView.allowsSelection = true
         self.mainCollectionView.allowsMultipleSelection = false
         self.mainCollectionView.register(ICKCalendarDateCell.self, forCellWithReuseIdentifier: "DateCell")
@@ -113,13 +226,45 @@ public class ICKCalendarView: UIView {
         self.mainCollectionView.isPagingEnabled = true
         self.addSubview(self.mainCollectionView)
         self.mainCollectionView.scrollToItem(at: IndexPath.init(row: self.monthCount - 1, section: 0), at: .centeredHorizontally, animated: false)
-        self._lastContentOffSet = CGPoint.init(x: (self.monthCount - 1) * Int(self.frame.width), y: 0)
-        self.dateArray = [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0]
     }
+    
+    // MARK: - Layout subviews.
+    
+    public override func layoutSubviews() {
+        self.initialize()
+    }
+    
+    // MARK: - Calculation date.
     
     private func calculationDate(value: Int) -> ICKDate {
         let date: ICKDate = ICKCalendar.current.date(byAdding: .month, value: value, to: ICKDate.init())
         return date
+    }
+    
+    // MARK: - Left arrow and right arrow handle.
+    
+    @objc private func leftArrowHandle(sender: UIButton) {
+        self.jumpToDate(date: ICKCalendar.current.date(byAdding: .month, value: -1, to: self.currentDate))
+    }
+    
+    @objc private func rightArrowHandle(sender: UIButton) {
+        self.jumpToDate(date: ICKCalendar.current.date(byAdding: .month, value: 1, to: self.currentDate))
+    }
+    
+    // MARK: - Public.
+    
+    /// 可以使用这个方法让日历显示任何指定的月份。
+    public func jumpToDate(date: ICKDate) {
+        self.currentDate = date
+        self.dateDisplayLabel?.text = String(self.currentDate.toString().prefix(7))
+        self.mainCollectionView.reloadData()
+    }
+    
+    /// 获取当前视图显示的月份。
+    public func currentMonth() -> ICKDate {
+        let cell: ICKCalendarDateCell = self.mainCollectionView.visibleCells[0] as! ICKCalendarDateCell
+        self.currentDate = cell.date
+        return cell.date
     }
 }
 
@@ -138,9 +283,17 @@ extension ICKCalendarView: UICollectionViewDataSource {
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell: ICKCalendarDateCell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! ICKCalendarDateCell
-        let date: ICKDate = self.calculationDate(value: self.dateArray[indexPath.row])
-        cell.date = date
+        var cell: ICKCalendarDateCell = ICKCalendarDateCell.init()
+        if self.allowManualScroll {
+            cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! ICKCalendarDateCell
+            let date: ICKDate = self.calculationDate(value: self.dateArray[indexPath.row])
+            cell.date = date
+            
+        } else {
+            cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DateCell", for: indexPath) as! ICKCalendarDateCell
+            cell.date = self.currentDate
+        }
+        
         cell.calendarView = self
         cell.dateCellTinColor = self.dateCellTinColor
         cell.otherDateCellColor = self.otherDateCellColor
