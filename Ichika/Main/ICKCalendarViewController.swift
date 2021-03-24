@@ -16,7 +16,7 @@ class ICKCalendarViewController: UIViewController {
         
         let calendarView: ICKCalendarView = ICKCalendarView.init(frame: CGRect.init(x: 0, y: 64, width: self.view.frame.width, height: self.view.frame.height))
         calendarView.delegate = self
-        calendarView.allowControlView = false
+        calendarView.allowControlView = true
         calendarView.weekDateCellColor = UIColor.green
         calendarView.allowManualScroll = false
         self.view.addSubview(calendarView)

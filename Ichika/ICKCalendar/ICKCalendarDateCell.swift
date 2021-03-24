@@ -13,48 +13,19 @@ class ICKCalendarDateCell: UICollectionViewCell {
     var calendarView: ICKCalendarView!
     var fillWithLastAndNextMonthDay: Bool = true  // 当月日期多余的位置是否填充上个月和下个月的日期，默认填充。
     
-    private var _dateCellTinColor: UIColor?
-    var dateCellTinColor: UIColor {
-        get {
-            if #available(iOS 13.0, *), self._dateCellTinColor == nil {
-                self._dateCellTinColor = UIColor.lightGray
-            } else if self._dateCellTinColor == nil {
-                self._dateCellTinColor = UIColor.gray
-            }
-            return self._dateCellTinColor!
-        }
-        set {
-            self._dateCellTinColor = newValue
+    var dateCellTinColor: UIColor? {
+        willSet {
+            self.setDateButtonColor(color: newValue)
         }
     }
-    
-    private var _otherDateCellColor: UIColor?
-    var otherDateCellColor: UIColor {
-        get {
-            if #available(iOS 13.0, *), self._otherDateCellColor == nil {
-                self._otherDateCellColor = UIColor.lightGray
-            } else if self._otherDateCellColor == nil {
-                self._otherDateCellColor = UIColor.gray
-            }
-            return self._otherDateCellColor!
-        }
-        set {
-            self._otherDateCellColor = newValue
+    var otherDateCellColor: UIColor? {
+        willSet {
+            self.setOtherDateButtonColor(color: newValue)
         }
     }
-    
-    private var _weekDateCellColor: UIColor?
-    var weekDateCellColor: UIColor {
-        get {
-            if #available(iOS 13.0, *), self._weekDateCellColor == nil {
-                self._weekDateCellColor = UIColor.lightGray
-            } else if self._weekDateCellColor == nil {
-                self._weekDateCellColor = UIColor.gray
-            }
-            return self._weekDateCellColor!
-        }
-        set {
-            self._weekDateCellColor = newValue
+    var weekDateCellColor: UIColor? {
+        willSet {
+            self.setWeekButtonColor(color: newValue)
         }
     }
     
@@ -136,26 +107,34 @@ class ICKCalendarDateCell: UICollectionViewCell {
             case 0:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("日", for: .normal)
+                dateButton.tag = 100
             case 1:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("一", for: .normal)
+                dateButton.tag = 101
             case 2:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("二", for: .normal)
+                dateButton.tag = 102
             case 3:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("三", for: .normal)
+                dateButton.tag = 103
             case 4:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("四", for: .normal)
+                dateButton.tag = 104
             case 5:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("五", for: .normal)
+                dateButton.tag = 105
             case 6:
                 self.currentDateArray[i] = nil
                 dateButton.setTitle("六", for: .normal)
+                dateButton.tag = 106
             default:
                 dateButton.date = self.currentDateArray[i]
+                dateButton.tag = 100 + i
             }
             let itemSizeWidth: CGFloat = self.dateView.frame.width / 7
             let itemSizeHeight: CGFloat = itemSizeWidth
@@ -176,6 +155,33 @@ class ICKCalendarDateCell: UICollectionViewCell {
             }
             
             self.dateView.addSubview(dateButton)
+        }
+    }
+    
+    // MARK: - 更改 UI 样式。
+    
+    private func setWeekButtonColor(color: UIColor?) {
+        for i in 0...6 {
+            let button: ICKCalendarDateButton = self.dateView.viewWithTag(100 + i) as! ICKCalendarDateButton
+            button.setTitleColor(color, for: .normal)
+        }
+    }
+    
+    private func setDateButtonColor(color: UIColor?) {
+        for i in 7...48 {
+            let button: ICKCalendarDateButton = self.dateView.viewWithTag(100 + i) as! ICKCalendarDateButton
+            if button.date!.month == self.date.month {
+                button.setTitleColor(color, for: .normal)
+            }
+        }
+    }
+    
+    private func setOtherDateButtonColor(color: UIColor?) {
+        for i in 7...48 {
+            let button: ICKCalendarDateButton = self.dateView.viewWithTag(100 + i) as! ICKCalendarDateButton
+            if button.date!.month != self.date.month {
+                button.setTitleColor(color, for: .normal)
+            }
         }
     }
 }

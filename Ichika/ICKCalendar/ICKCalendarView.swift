@@ -60,6 +60,7 @@ public class ICKCalendarView: UIView {
         }
         set {
             self._dateCellTinColor = newValue
+            self.getCurrentMonthCell()?.dateCellTinColor = newValue
         }
     }
     
@@ -76,6 +77,7 @@ public class ICKCalendarView: UIView {
         }
         set {
             self._otherDateCellColor = newValue
+            self.getCurrentMonthCell()?.otherDateCellColor = newValue
         }
     }
     
@@ -92,6 +94,7 @@ public class ICKCalendarView: UIView {
         }
         set {
             self._weekDateCellColor = newValue
+            self.getCurrentMonthCell()?.weekDateCellColor = newValue
         }
     }
     
@@ -251,6 +254,18 @@ public class ICKCalendarView: UIView {
         self.jumpToDate(date: ICKCalendar.current.date(byAdding: .month, value: 1, to: self.currentDate))
     }
     
+    // MARK: - 根据当前日期获取 collectionView 当中该月的 cell。
+    
+    private func getCurrentMonthCell() -> ICKCalendarDateCell? {
+        let cells: Array<ICKCalendarDateCell> = self.mainCollectionView.visibleCells as! Array<ICKCalendarDateCell>
+        for cell in cells {
+            if cell.date.toString() == self.currentDate.toString() {
+                return cell
+            }
+        }
+        return nil
+    }
+    
     // MARK: - Public.
     
     /// 可以使用这个方法让日历显示任何指定的月份。
@@ -295,9 +310,9 @@ extension ICKCalendarView: UICollectionViewDataSource {
         }
         
         cell.calendarView = self
-        cell.dateCellTinColor = self.dateCellTinColor
-        cell.otherDateCellColor = self.otherDateCellColor
-        cell.weekDateCellColor = self.weekDateCellColor
+//        cell.dateCellTinColor = self.dateCellTinColor
+//        cell.otherDateCellColor = self.otherDateCellColor
+//        cell.weekDateCellColor = self.weekDateCellColor
         
         // - delegate.
         
