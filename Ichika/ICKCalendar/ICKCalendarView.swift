@@ -268,11 +268,24 @@ public class ICKCalendarView: UIView {
     
     // MARK: - Public.
     
-    /// 可以使用这个方法让日历显示任何指定的月份。
+    /// 可以使用这个方法让日历显示任何指定的日期的月份。
     public func jumpToDate(date: ICKDate) {
         self.currentDate = date
         self.dateDisplayLabel?.text = String(self.currentDate.toString().prefix(7))
         self.mainCollectionView.reloadData()
+    }
+    
+    /// 可以使用这个方法让日历显示任何指定的月份，传入的参数必须为 `yyyy-MM` 形式，如 `2021-04`。
+    public func jumpToMonth(month: String) {
+        let dateString: String = "\(month)-01"
+        let dateFormatter: DateFormatter = DateFormatter.init()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let date: Date? = dateFormatter.date(from: dateString)
+        var ickDate: ICKDate? = nil
+        if date != nil {
+            ickDate = ICKDate.init(date: date!)
+            self.jumpToDate(date: ickDate!)
+        }
     }
     
     /// 获取当前视图显示的月份。
@@ -280,6 +293,11 @@ public class ICKCalendarView: UIView {
         let cell: ICKCalendarDateCell = self.mainCollectionView.visibleCells[0] as! ICKCalendarDateCell
         self.currentDate = cell.date
         return cell.date
+    }
+    
+    /// 刷新数据数据。
+    public func reloadData() {
+        self.mainCollectionView.reloadData()
     }
 }
 
@@ -310,10 +328,7 @@ extension ICKCalendarView: UICollectionViewDataSource {
         }
         
         cell.calendarView = self
-//        cell.dateCellTinColor = self.dateCellTinColor
-//        cell.otherDateCellColor = self.otherDateCellColor
-//        cell.weekDateCellColor = self.weekDateCellColor
-        
+
         // - delegate.
         
         if let delegate = self.delegate {
@@ -321,8 +336,8 @@ extension ICKCalendarView: UICollectionViewDataSource {
                 delegate.calendarView?(calendarView: view, didSelectCell: button)
             }
             
-            cell.viewForCellHandle = { (view, date) in
-                let view: UIView? = delegate.calendarView?(calendarView: view, viewForCellAt: date)
+            cell.viewForCellHandle = { (view, size, date) in
+                let view: UIView? = delegate.calendarView?(calendarView: view, cellItemSize: size, viewForCellAt: date)
                 return view
             }
         }

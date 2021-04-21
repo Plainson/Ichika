@@ -30,7 +30,7 @@ class ICKCalendarDateCell: UICollectionViewCell {
     }
     
     var handleTapDate: ((_ view: ICKCalendarView, _ cell: ICKCalendarDateButton) -> Void)?
-    var viewForCellHandle: ((_ view: ICKCalendarView, _ date: ICKDate) -> UIView?)?
+    var viewForCellHandle: ((_ view: ICKCalendarView, _ cellItemSize: CGSize, _ date: ICKDate?) -> UIView?)?
     
     private var currentDateArray: Array<ICKDate?> = Array<ICKDate?>.init(repeating: ICKDate.init(), count: 49)
     
@@ -148,10 +148,14 @@ class ICKCalendarDateCell: UICollectionViewCell {
                 }
                 dateButton.addTarget(self, action: #selector(self.handleTapDateButton(sender:)), for: .touchUpInside)
                 if let handle = self.viewForCellHandle {
-                    dateButton.customView(view: handle(self.calendarView, dateButton.date!))
+                    dateButton.customView(view: handle(self.calendarView, CGSize.init(width: itemSizeWidth, height: itemSizeHeight), dateButton.date))
                 }
             } else {
                 dateButton.setTitleColor(self.weekDateCellColor, for: .normal)
+                
+                if let handle = self.viewForCellHandle {
+                    dateButton.customView(view: handle(self.calendarView, CGSize.init(width: itemSizeWidth, height: itemSizeHeight), nil))
+                }
             }
             
             self.dateView.addSubview(dateButton)
@@ -206,10 +210,13 @@ public class ICKCalendarDateButton: UIButton {
         if view == nil {
             return
         }
+        self.setTitle(nil, for: .normal)
         let backgroundView: UIView = UIView.init()
         backgroundView.frame = CGRect.init(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
+        backgroundView.isUserInteractionEnabled = false
         self.addSubview(backgroundView)
         view!.frame = CGRect.init(x: 0, y: 0, width: backgroundView.frame.width, height: backgroundView.frame.height)
+        view!.isUserInteractionEnabled = false
         backgroundView.addSubview(view!)
     }
 }

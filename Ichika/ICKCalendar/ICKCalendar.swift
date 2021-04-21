@@ -33,6 +33,7 @@ public struct ICKCalendar {
         return dateComponents.month!
     }
     
+    // Week 的范围是 1~7，其中 1 代表星期天，2 代表星期一。
     public func week(date: ICKDate) -> Int {
         var dateComponents: DateComponents = DateComponents.init()
         dateComponents = self.calendar.dateComponents([.weekday], from: date.toDate())

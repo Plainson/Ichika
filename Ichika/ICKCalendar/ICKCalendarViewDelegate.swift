@@ -14,5 +14,5 @@ import UIKit
     
     @objc optional func calendarView(calendarView: ICKCalendarView, didSelectCell cell: ICKCalendarDateButton)
     
-    @objc optional func calendarView(calendarView: ICKCalendarView, viewForCellAt date: ICKDate) -> UIView
+    @objc optional func calendarView(calendarView: ICKCalendarView, cellItemSize: CGSize, viewForCellAt date: ICKDate?) -> UIView?
 }
